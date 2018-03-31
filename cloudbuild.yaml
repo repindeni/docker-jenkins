@@ -1,0 +1,23 @@
+steps:
+- name: 'gcr.io/cloud-builders/git'
+  args: ['clone', 'git@bitbucket.org:devlight/docker_image_jenkins.git']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["build", "-t", "gcr.io/$PROJECT_ID/tjenkins:$REVISION_ID", "-f", "Dockerfile", "."]
+- name: 'gcr.io/cloud-builders/docker'
+  args: ["push", "gcr.io/$PROJECT_ID/tjenkins:$REVISION_ID"]
+- name: 'gcr.io/cloud-builders/gcloud'
+  args:
+  - 'beta'
+  - 'compute'
+  - 'instances'
+  - 'create-with-container'
+  - '--project'
+  - '$PROJECT_ID'
+  - 'tjenkins'
+  - '--container-image'
+  - 'gcr.io/$PROJECT_ID/jenkins:$REVISION_ID'
+  - '--tags'
+  - 'jenkins-network'
+  - '--zone'
+  - 'europe-west1-b'
+logsBucket: 'gs://jenkins_build_logs'
